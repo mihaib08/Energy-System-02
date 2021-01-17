@@ -66,7 +66,6 @@ public final class Entities {
             Entity p = entity.createEntity(Constants.PRODUCER, inProducer);
             producers.addProducer((Producer) p);
         }
-        producers.updateStrategyLists();
     }
 
     /**
@@ -88,7 +87,8 @@ public final class Entities {
         }
 
         for (ProducerChange pChange : update.getProducerChanges()) {
-            producers.updateChanges(pChange.getId(), pChange.getEnergyPerDistributor(), distributors);
+            producers.updateChanges(pChange.getId(), pChange.getEnergyPerDistributor(),
+                    distributors);
         }
     }
 

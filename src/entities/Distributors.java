@@ -14,11 +14,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static common.Constants.QUOTIENT;
+
 /**
  * Distributors Database
  * Manages the operations of distributors
  */
-public final class Distributors{
+public final class Distributors implements DistributorsObservers {
     /**
      * Singleton instance
      */
@@ -58,11 +60,11 @@ public final class Distributors{
     private int noBankrupt;
 
     /**
-     * Hashmap idDistributor (key) - list of producers' ids (value)
+     * Hashmap idDistributor (key) - list of producers (value)
      */
-    private HashMap<Integer, List<Producer>> producerIds;
+    private HashMap<Integer, List<Producer>> energyProducers;
 
-    EnergyStrategyFactory strategy = EnergyStrategyFactory.getInstance();
+    private EnergyStrategyFactory strategy = EnergyStrategyFactory.getInstance();
 
     /** Add a distributor to the simulation */
     public void addDistributor(final Distributor distributor) {
@@ -273,7 +275,7 @@ public final class Distributors{
         revenues = new HashMap<>();
         distributorContracts = new HashMap<>();
         noBankrupt = 0;
-        producerIds = new HashMap<>();
+        energyProducers = new HashMap<>();
     }
 
     /**
@@ -283,74 +285,64 @@ public final class Distributors{
         return noBankrupt == distributors.size();
     }
 
-    public void updateProducers(Producer p) {
-        for (int id : producerIds.keySet()) {
-            List<Producer> ps = producerIds.get(id);
+    /**
+     * Choose the correspondent producers for each distributor
+     *     -- depends on the strategy
+     */
+    public void chooseProducers(Producers producers, int currMonth) {
+        for (int id : distributors.keySet()) {
+            Distributor d = distributors.get(id);
+            if (!checkBankruptcy(id) && d.isChangedProducer()) {
+                if (currMonth > 0) {
+                    /* eliminate distributor from producers */
+                    List<Producer> currProducers = energyProducers.get(id);
+
+                    producers.eliminateDistributor(id, currProducers);
+                }
+
+                EnergyStrategy energyStrategy = d.getStrategy();
+                List<Producer> resProducers;
+                int energyNeeded = d.getEnergyNeededKW();
+
+                /* get the new list of producers based on the strategy */
+                resProducers = energyStrategy.getEnergyProducers(energyNeeded, producers);
+                energyProducers.put(id, resProducers);
+                d.setChangedProducer(false);
+
+                /* update the production cost for the current distributor */
+                updateProductionCost(id);
+
+                /* update the producers in resProducers */
+                producers.updateProducers(id, resProducers);
+            }
+        }
+    }
+
+    /**
+     * Update the production costs depending on energyProducers
+     */
+    public void updateProductionCost(int id) {
+        List<Producer> dProducers = energyProducers.get(id);
+
+        double cost = 0;
+        for (Producer p : dProducers) {
+            cost = cost + (p.getEnergyPerDistributor() * p.getPriceKW());
+        }
+
+        long productionCost = Math.round(Math.floor(cost / QUOTIENT));
+        Distributor d = distributors.get(id);
+        d.setProductionCost(productionCost);
+    }
+
+    @Override
+    public void update(Producer p) {
+        for (int id : energyProducers.keySet()) {
+            List<Producer> ps = energyProducers.get(id);
+
             if (ps.contains(p)) {
-                /* the producer is in the current distributor's list */
                 Distributor d = distributors.get(id);
                 d.setChangedProducer(true);
             }
         }
-    }
-
-    /**
-     * Choose the producers according to each distributor's strategy
-     */
-    public void applyStrategies(int currMonth) {
-        Producers producers = Producers.getInstance();
-        for (int id : distributors.keySet()) {
-            Distributor d = distributors.get(id);
-            if (!checkBankruptcy(id) && d.isChangedProducer()) {
-                if (currMonth != 0) {
-                    /*
-                     * eliminate the distributor
-                     * from the producers' list
-                     */
-                    producers.eliminateDistributor(id, currMonth);
-                }
-
-                List<Producer> res = d.getStrategy().getEnergyProducers(d.getEnergyNeededKW(), producers);
-
-                producerIds.put(id, res);
-
-                /* add the current distributor to the resulted producers */
-                for (Producer p : res) {
-                    HashMap<Integer, List<Integer>> dIds = p.getDistributorIds();
-
-                    List<Integer> ids = dIds.get(currMonth);
-                    ids.add(id);
-                    dIds.put(currMonth, ids);
-
-                    p.setDistributorIds(dIds);
-
-                    int nrDist = p.getCurrNoDistributors();
-                    p.setCurrDistributors(nrDist + 1);
-                }
-                d.setChangedProducer(false);
-            }
-        }
-    }
-
-    /**
-     * Update the production cost
-     * according to the chosen producers
-     */
-    public void updateProductionCost() {
-        for (int id : producerIds.keySet()) {
-            List<Producer> producers = producerIds.get(id);
-
-            double cost = 0;
-            for (Producer p : producers) {
-                cost += (p.getEnergyPerDistributor() * p.getPriceKW());
-            }
-            long productionCost = Math.round(Math.floor(cost / 10));
-            Distributor d = distributors.get(id);
-            d.setProductionCost(productionCost);
-        }
-    }
-
-    public HashMap<Integer, List<Producer>> getProducerIds() {
-        return producerIds;
     }
 }

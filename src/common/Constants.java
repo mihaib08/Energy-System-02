@@ -23,4 +23,5 @@ public final class Constants {
     public static final String QUANTITY = "QUANTITY";
 
     public static final double PRODUCTION_PERCENT = 0.2;
+    public static final int QUOTIENT = 10;
 }

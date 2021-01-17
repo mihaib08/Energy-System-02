@@ -5,7 +5,6 @@ import entities.Distributors;
 import entities.Entities;
 import entities.Producers;
 import entity.EntityFactory;
-import entity.Producer;
 import input.InitialData;
 import input.InputParser;
 import input.Update;
@@ -36,6 +35,7 @@ public final class Main {
 
         ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         InputParser input = mapper.readValue(new File(inFile), InputParser.class);
+        System.out.println(inFile);
 
         int noTurns = input.getNumberOfTurns();
 
@@ -51,18 +51,12 @@ public final class Main {
         /* (re)initialise the classes' fields */
         entities.initialiseEntries(data, entity);
 
-        producers.initialiseDistributorLists(noTurns);
-        distributors.applyStrategies(0);
-        distributors.updateProductionCost();
+        producers.createMonthlyList(0);
+        producers.updateStrategyLists();
+        distributors.chooseProducers(producers, 0);
         entities.simulateMonth(consumers, distributors);
 
         for (int i = 1; i <= noTurns; ++i) {
-            /*
-             * copy the distributors' list for each producers
-             * from the previous one
-             */
-            producers.copyDistributors(i);
-
             /* check if all distributors went bankrupt */
             if (distributors.checkAllBankrupt()) {
                 break;
@@ -71,16 +65,19 @@ public final class Main {
             /* eliminate the bankrupt consumers */
             consumers.eliminateBankruptConsumers(distributors);
 
+            producers.createMonthlyList(i);
+
+            /* process the updates */
             Update u = input.getMonthlyUpdates().get(i - 1);
             entities.getUpdates(u, entity, distributors, consumers, producers);
+
             /* simulate the current month */
             entities.simulateMonth(consumers, distributors);
 
             producers.updateStrategyLists();
-
-            distributors.applyStrategies(i);
-            distributors.updateProductionCost();
+            distributors.chooseProducers(producers, i);
         }
+
         /* eliminate the bankrupt consumers */
         consumers.eliminateBankruptConsumers(distributors);
 

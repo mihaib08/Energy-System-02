@@ -1,11 +1,13 @@
 package entity;
 
+import entities.Distributors;
 import input.InProducer;
+import output.MonthlyStatus;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 
-public final class Producer extends Entity {
+public final class Producer extends Entity implements ProducerObservable {
     private String energyType;
 
     private int maxDistributors;
@@ -14,16 +16,13 @@ public final class Producer extends Entity {
 
     private int energyPerDistributor;
 
-    /**
-     * Hashmap month (key) - distributorIds
-     *    > keep track of the distributors
-     *      that are being provided by the current producer
-     */
-    private HashMap<Integer, List<Integer>> distributorIds;
-
     /** the current no. of subscribed distributors */
     private int currNoDistributors;
 
+    /**
+     * List of monthly stats - distributorsIds
+     */
+    private List<MonthlyStatus> distributorIds;
 
     public Producer(final InProducer inProducer) {
         super(inProducer.getId());
@@ -31,7 +30,7 @@ public final class Producer extends Entity {
         maxDistributors = inProducer.getMaxDistributors();
         priceKW = inProducer.getPriceKW();
         energyPerDistributor = inProducer.getEnergyPerDistributor();
-        distributorIds = new HashMap<>();
+        distributorIds = new ArrayList<>();
         currNoDistributors = 0;
     }
 
@@ -44,6 +43,11 @@ public final class Producer extends Entity {
                 + ", priceKW=" + priceKW
                 + ", energyPerDistributor=" + energyPerDistributor
                 + '}';
+    }
+
+    @Override
+    public void notifyDistributors(Distributors distributors) {
+        distributors.update(this);
     }
 
     /** Getters + Setters */
@@ -88,11 +92,11 @@ public final class Producer extends Entity {
         this.currNoDistributors = currDistributors;
     }
 
-    public HashMap<Integer, List<Integer>> getDistributorIds() {
+    public List<MonthlyStatus> getDistributorIds() {
         return distributorIds;
     }
 
-    public void setDistributorIds(HashMap<Integer, List<Integer>> distributorIds) {
+    public void setDistributorIds(List<MonthlyStatus> distributorIds) {
         this.distributorIds = distributorIds;
     }
 }

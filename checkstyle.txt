@@ -1,17 +1,2 @@
 Starting audit...
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/Main.java:1: File does not end with a newline. [NewlineAtEndOfFile]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/Main.java:8:8: Unused import - entity.Producer. [UnusedImports]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Distributors.java:1: File does not end with a newline. [NewlineAtEndOfFile]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Distributors.java:21:32: '{' is not preceded with whitespace. [WhitespaceAround]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Distributors.java:65:27: Variable 'strategy' must be private and have accessor methods. [VisibilityModifier]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Distributors.java:286:5: Missing a Javadoc comment. [MissingJavadocMethod]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Distributors.java:313: Line is longer than 100 characters (found 106). [LineLength]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Distributors.java:347:64: '10' is a magic number. [MagicNumber]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Entities.java:1: File does not end with a newline. [NewlineAtEndOfFile]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Entities.java:91: Line is longer than 100 characters (found 102). [LineLength]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Producers.java:1: File does not end with a newline. [NewlineAtEndOfFile]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Producers.java:73:5: Missing a Javadoc comment. [MissingJavadocMethod]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entities/Producers.java:185:35: ',' is not followed by whitespace. [WhitespaceAfter]
-[ERROR] /home/mikee/Desktop/POO/Teme/03/Tests/00/proiect-etapa2-energy-system/./src/entity/Producer.java:1: File does not end with a newline. [NewlineAtEndOfFile]
 Audit done.
-Checkstyle ends with 14 errors.

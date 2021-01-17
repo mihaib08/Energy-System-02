@@ -29,6 +29,7 @@ public final class Producers {
 
     /**
      * List of producers having renewable energy
+     *   -- to be (re)sorted by GREEN strategy after each update
      */
     private List<Producer> greenProducers;
 
@@ -52,6 +53,16 @@ public final class Producers {
     }
 
     /**
+     * (Re)initialise the fields
+     */
+    public void initialiseEntries() {
+        producers = new HashMap<>();
+        greenProducers = new ArrayList<>();
+        priceProducers = new ArrayList<>();
+        quantityProducers = new ArrayList<>();
+    }
+
+    /**
      * Check if the given producer
      * can be added to the greenProducers list
      */
@@ -70,6 +81,10 @@ public final class Producers {
         return PRODUCERS;
     }
 
+    /**
+     * Update the strategy lists by sorting them
+     * after each new monthly update
+     */
     public void updateStrategyLists() {
         greenProducers = greenProducers.stream()
                 .sorted(Comparator.comparing(Producer::getId))
@@ -91,102 +106,115 @@ public final class Producers {
     }
 
     /**
-     * Update the monthly changes of the producers
-     *    -- notify the Observers = Distributors
+     * Update the current producer
      */
-    public void updateChanges(final int id, final int energy, final Distributors distributors) {
+    public void updateChanges(int id, int newEnergy, Distributors distributors) {
         Producer p = producers.get(id);
-        p.setEnergyPerDistributor(energy);
-        distributors.updateProducers(p);
-    }
+        p.setEnergyPerDistributor(newEnergy);
 
-    void initialiseEntries() {
-        producers = new HashMap<>();
-        greenProducers = new ArrayList<>();
-        priceProducers = new ArrayList<>();
-        quantityProducers = new ArrayList<>();
+        /* notify the distributors */
+        p.notifyDistributors(distributors);
     }
 
     /**
-     * initialise the monthly distributors lists for each producer
+     * Add the distributor id - id - to the current list of its producers
      */
-    public void initialiseDistributorLists(int noMonths) {
-        for (int id : producers.keySet()) {
-            Producer p = producers.get(id);
-            HashMap<Integer, List<Integer>> monthlyDist = p.getDistributorIds();
-            for (int i = 0; i <= noMonths; ++i) {
-                List<Integer> dIds = new ArrayList<>();
-                monthlyDist.put(i, dIds);
+    public void updateProducers(int id, List<Producer> resProducers) {
+        for (Producer p : resProducers) {
+            List<MonthlyStatus> ids = p.getDistributorIds();
+
+            MonthlyStatus status = ids.get(ids.size() - 1);
+            List<Integer> distributorsIds = status.getDistributorsIds();
+            distributorsIds.add(id);
+//            status.setDistributorsIds(distributorsIds);
+
+//            int sz = ids.size() - 1;
+//            ids.set(sz, status);
+//            p.setDistributorIds(ids);
+        }
+    }
+
+    /**
+     * eliminate the distributor - id -
+     * from its current list of producers
+     */
+    public void eliminateDistributor(int id, List<Producer> currProducers) {
+        for (Producer p : currProducers) {
+            int curr = p.getCurrNoDistributors();
+            curr--;
+            p.setCurrDistributors(curr);
+
+            /* get the last status */
+            List<MonthlyStatus> stats = p.getDistributorIds();
+            MonthlyStatus status = stats.get(stats.size() - 1);
+
+            /* remove the current distributor */
+            List<Integer> dIds = status.getDistributorsIds();
+            dIds.remove((Integer) id);
+
+            status.setDistributorsIds(dIds);
+
+            int sz = stats.size() - 1;
+            stats.set(sz, status);
+            p.setDistributorIds(stats);
+        }
+    }
+
+    /**
+     * Create the correspondent monthly distributors' lists
+     */
+    public void createMonthlyList(int currMonth) {
+        if (currMonth == 0) {
+            for (int id : producers.keySet()) {
+                Producer p = producers.get(id);
+
+                MonthlyStatus status = new MonthlyStatus(currMonth, new ArrayList<>());
+                List<MonthlyStatus> dIds = p.getDistributorIds();
+                dIds.add(status);
+                p.setDistributorIds(dIds);
             }
-            p.setDistributorIds(monthlyDist);
+        } else {
+            for (int id : producers.keySet()) {
+                Producer p = producers.get(id);
+
+                List<MonthlyStatus> dIds = p.getDistributorIds();
+                MonthlyStatus currStatus = dIds.get(dIds.size() - 1);
+
+                MonthlyStatus status = new MonthlyStatus(currStatus);
+                dIds.add(status);
+//                p.setDistributorIds(dIds);
+            }
         }
     }
 
-    /**
-     * Eliminate a given distributor from the producers' lists
-     */
-    public void eliminateDistributor(int id, int currMonth) {
-        for (int pId : producers.keySet()) {
-            Producer p = producers.get(pId);
-            HashMap<Integer, List<Integer>> dIds = p.getDistributorIds();
-            List<Integer> ids = dIds.get(currMonth);
-
-            ids.remove((Integer) id);
-            dIds.put(currMonth, ids);
-            p.setDistributorIds(dIds);
-
-            int nrDist = p.getCurrNoDistributors();
-            p.setCurrDistributors(nrDist - 1);
-        }
-    }
-
-    /**
-     * Make a copy of the previous month's distributor list
-     * to the current month
-     */
-    public void copyDistributors(int currMonth) {
-        for (int id : producers.keySet()) {
-            Producer p = producers.get(id);
-            HashMap<Integer, List<Integer>> dIds = p.getDistributorIds();
-
-            List<Integer> prevIds = dIds.get(currMonth - 1);
-            List<Integer> currIds = dIds.get(currMonth);
-            currIds.addAll(prevIds);
-
-            dIds.put(currMonth, currIds);
-            p.setDistributorIds(dIds);
-        }
-    }
-
-    private List<MonthlyStatus> getMonthlyStats(Producer p, int noMonths) {
-        List<MonthlyStatus> stats = new ArrayList<>();
-
-        HashMap<Integer, List<Integer>> dIds = p.getDistributorIds();
-        for (int i = 1; i <= noMonths; ++i) {
-            List<Integer> currIds = dIds.get(i);
-            Collections.sort(currIds);
-            MonthlyStatus monthlyStatus = new MonthlyStatus(i, currIds);
-            stats.add(monthlyStatus);
-        }
-        return stats;
-    }
-
-    /**
-     * Get the list of each producer's characteristics to be printed
-     */
-    public List<OutProducer> getOutProducers(int noMonths) {
+    /** Get the list of producers to be printed */
+    public List<OutProducer> getOutProducers(int noTurns) {
         List<OutProducer> outProducers = new ArrayList<>();
 
         for (int id : producers.keySet()) {
             Producer p = producers.get(id);
-            List<MonthlyStatus> stats = getMonthlyStats(p, noMonths);
 
-            OutProducer outProducer = new OutProducer(id, p.getMaxDistributors(),
-                    p.getPriceKW(),p.getEnergyType(), p.getEnergyPerDistributor(), stats);
-            outProducers.add(outProducer);
+            List<MonthlyStatus> stats = p.getDistributorIds();
+            List<MonthlyStatus> resStats = new ArrayList<>();
+
+            for (int i = 1; i < stats.size(); ++i) {
+                MonthlyStatus m = stats.get(i);
+                List<Integer> dIds = m.getDistributorsIds();
+
+                Collections.sort(dIds);
+                MonthlyStatus newStatus = new MonthlyStatus(m.getMonth(), dIds);
+                resStats.add(newStatus);
+            }
+
+            OutProducer newProducer = new OutProducer(id, p.getMaxDistributors(), p.getPriceKW(),
+                    p.getEnergyType(), p.getEnergyPerDistributor(), resStats);
+
+            outProducers.add(newProducer);
         }
         return outProducers;
     }
+
+    /** Getters + Setters */
 
     public HashMap<Integer, Producer> getProducers() {
         return producers;
