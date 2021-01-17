@@ -5,7 +5,7 @@ import input.InProducer;
 import java.util.HashMap;
 import java.util.List;
 
-public class Producer extends Entity {
+public final class Producer extends Entity {
     private String energyType;
 
     private int maxDistributors;
@@ -22,7 +22,7 @@ public class Producer extends Entity {
     private HashMap<Integer, List<Integer>> distributorIds;
 
     /** the current no. of subscribed distributors */
-    private int currDistributors;
+    private int currNoDistributors;
 
 
     public Producer(final InProducer inProducer) {
@@ -32,7 +32,7 @@ public class Producer extends Entity {
         priceKW = inProducer.getPriceKW();
         energyPerDistributor = inProducer.getEnergyPerDistributor();
         distributorIds = new HashMap<>();
-        currDistributors = 0;
+        currNoDistributors = 0;
     }
 
     @Override
@@ -80,12 +80,12 @@ public class Producer extends Entity {
         this.energyPerDistributor = energyPerDistributor;
     }
 
-    public int getCurrDistributors() {
-        return currDistributors;
+    public int getCurrNoDistributors() {
+        return currNoDistributors;
     }
 
     public void setCurrDistributors(int currDistributors) {
-        this.currDistributors = currDistributors;
+        this.currNoDistributors = currDistributors;
     }
 
     public HashMap<Integer, List<Integer>> getDistributorIds() {

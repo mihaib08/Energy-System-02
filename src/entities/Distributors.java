@@ -283,20 +283,6 @@ public final class Distributors{
         return noBankrupt == distributors.size();
     }
 
-//    @Override
-//    public void update(Observable o, Object arg) {
-//        Producer p = (Producer) arg;
-//        System.out.println(">>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-//        for (int id : producerIds.keySet()) {
-//            List<Producer> ps = producerIds.get(id);
-//            if (ps.contains(p)) {
-//                /* the producer is in the current distributor's list */
-//                Distributor d = distributors.get(id);
-//                d.setChangedProducer(true);
-//            }
-//        }
-//    }
-
     public void updateProducers(Producer p) {
         for (int id : producerIds.keySet()) {
             List<Producer> ps = producerIds.get(id);
@@ -312,6 +298,7 @@ public final class Distributors{
      * Choose the producers according to each distributor's strategy
      */
     public void applyStrategies(int currMonth) {
+        Producers producers = Producers.getInstance();
         for (int id : distributors.keySet()) {
             Distributor d = distributors.get(id);
             if (!checkBankruptcy(id) && d.isChangedProducer()) {
@@ -320,11 +307,10 @@ public final class Distributors{
                      * eliminate the distributor
                      * from the producers' list
                      */
-                    Producers producers = Producers.getInstance();
                     producers.eliminateDistributor(id, currMonth);
                 }
 
-                List<Producer> res = d.getStrategy().getEnergyProviders(d.getEnergyNeededKW());
+                List<Producer> res = d.getStrategy().getEnergyProducers(d.getEnergyNeededKW(), producers);
 
                 producerIds.put(id, res);
 
@@ -338,7 +324,7 @@ public final class Distributors{
 
                     p.setDistributorIds(dIds);
 
-                    int nrDist = p.getCurrDistributors();
+                    int nrDist = p.getCurrNoDistributors();
                     p.setCurrDistributors(nrDist + 1);
                 }
                 d.setChangedProducer(false);

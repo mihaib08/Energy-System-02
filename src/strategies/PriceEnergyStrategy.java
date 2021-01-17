@@ -6,31 +6,32 @@ import entity.Producer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PriceEnergyStrategy implements EnergyStrategy {
+public final class PriceEnergyStrategy implements EnergyStrategy {
     @Override
-    public List<Producer> getEnergyProviders(int neededEnergy) {
-        List<Producer> distProducers = new ArrayList<>();
-        Producers producers = Producers.getInstance();
+    public List<Producer> getEnergyProducers(int energyNeeded, Producers producers) {
+        List<Producer> resProducers = new ArrayList<>();
+
         List<Producer> priceProducers = producers.getPriceProducers();
-        int aux = 0;
+
+        int currEnergy = 0;
 
         for (Producer p : priceProducers) {
             int maxDistributors = p.getMaxDistributors();
-            int currDistributors = p.getCurrDistributors();
-            if (currDistributors < maxDistributors) {
-                aux += p.getEnergyPerDistributor();
-                distProducers.add(p);
+            int currDistributors = p.getCurrNoDistributors();
 
-                p.setCurrDistributors(currDistributors + 1);
-            }
-            /*
-             * the required amount of energy was obtained
-             *    > return the list of producers
-             */
-            if (aux >= neededEnergy) {
-                return distProducers;
+            if (currDistributors < maxDistributors) {
+                resProducers.add(p);
+
+                currDistributors++;
+                p.setCurrDistributors(currDistributors);
+
+                currEnergy += p.getEnergyPerDistributor();
+                if (currEnergy >= energyNeeded) {
+                    return resProducers;
+                }
             }
         }
+
         return null;
     }
 }

@@ -135,7 +135,7 @@ public final class Producers {
             dIds.put(currMonth, ids);
             p.setDistributorIds(dIds);
 
-            int nrDist = p.getCurrDistributors();
+            int nrDist = p.getCurrNoDistributors();
             p.setCurrDistributors(nrDist - 1);
         }
     }

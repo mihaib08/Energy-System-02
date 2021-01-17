@@ -1,5 +1,6 @@
 package strategies;
 
+import entities.Producers;
 import entity.Producer;
 
 import java.util.List;
@@ -12,5 +13,5 @@ public interface EnergyStrategy {
     /**
      * get a list of available producers depending on the strategy
      */
-    List<Producer> getEnergyProviders(int neededEnergy);
+    List<Producer> getEnergyProducers(int energyNeeded, Producers producers);
 }

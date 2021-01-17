@@ -6,53 +6,56 @@ import entity.Producer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GreenEnergyStrategy implements EnergyStrategy {
+public final class GreenEnergyStrategy implements EnergyStrategy {
     @Override
-    public List<Producer> getEnergyProviders(int neededEnergy) {
-        List<Producer> distProducers = new ArrayList<>();
-        Producers producers = Producers.getInstance();
-        List<Producer> greenProducers = producers.getGreenProducers();
+    public List<Producer> getEnergyProducers(int energyNeeded, Producers producers) {
+        List<Producer> resProducers = new ArrayList<>();
 
-        int aux = 0;
+        List<Producer> greenProducers = producers.getGreenProducers();
+        List<Producer> priceProducers = producers.getPriceProducers();
+
+        int currEnergy = 0;
+
         for (Producer p : greenProducers) {
             int maxDistributors = p.getMaxDistributors();
-            int currDistributors = p.getCurrDistributors();
+            int currDistributors = p.getCurrNoDistributors();
+
             if (currDistributors < maxDistributors) {
-                aux += p.getEnergyPerDistributor();
-                distProducers.add(p);
+                resProducers.add(p);
 
-                p.setCurrDistributors(currDistributors + 1);
-            }
-            /*
-             * the required amount of energy was obtained
-             *    > return the list of producers
-             */
-            if (aux >= neededEnergy) {
-                return distProducers;
+                currDistributors++;
+                p.setCurrDistributors(currDistributors);
+
+                currEnergy += p.getEnergyPerDistributor();
+                if (currEnergy >= energyNeeded) {
+                    return resProducers;
+                }
             }
         }
+
         /*
-         * the required amount isn't completed
-         *    --> more energy is needed
+         * it gets here --> greenProducers are not enough
+         *   -- use priceProducers
          */
-        List<Producer> priceProducers = producers.getPriceProducers();
         for (Producer p : priceProducers) {
-            int maxDistributors = p.getMaxDistributors();
-            int currDistributors = p.getCurrDistributors();
-            if (currDistributors < maxDistributors && !distProducers.contains(p)) {
-                aux += p.getEnergyPerDistributor();
-                distProducers.add(p);
+            if (!resProducers.contains(p)) {
+                int maxDistributors = p.getMaxDistributors();
+                int currDistributors = p.getCurrNoDistributors();
 
-                p.setCurrDistributors(currDistributors + 1);
-            }
-            /*
-             * the required amount of energy was obtained
-             *    > return the list of producers
-             */
-            if (aux >= neededEnergy) {
-                return distProducers;
+                if (currDistributors < maxDistributors) {
+                    resProducers.add(p);
+
+                    currDistributors++;
+                    p.setCurrDistributors(currDistributors);
+
+                    currEnergy += p.getEnergyPerDistributor();
+                    if (currEnergy >= energyNeeded) {
+                        return resProducers;
+                    }
+                }
             }
         }
+
         return null;
     }
 }

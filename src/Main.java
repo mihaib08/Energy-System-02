@@ -51,7 +51,6 @@ public final class Main {
         /* (re)initialise the classes' fields */
         entities.initialiseEntries(data, entity);
 
-
         producers.initialiseDistributorLists(noTurns);
         distributors.applyStrategies(0);
         distributors.updateProductionCost();
