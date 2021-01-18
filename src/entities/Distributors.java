@@ -294,7 +294,10 @@ public final class Distributors implements DistributorsObservers {
             Distributor d = distributors.get(id);
             if (!checkBankruptcy(id) && d.isChangedProducer()) {
                 if (currMonth > 0) {
-                    /* eliminate distributor from producers */
+                    /*
+                     * eliminate the distributor
+                     * from the current producers
+                     */
                     List<Producer> currProducers = energyProducers.get(id);
 
                     producers.eliminateDistributor(id, currProducers);

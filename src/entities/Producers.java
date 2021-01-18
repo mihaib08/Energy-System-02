@@ -126,11 +126,6 @@ public final class Producers {
             MonthlyStatus status = ids.get(ids.size() - 1);
             List<Integer> distributorsIds = status.getDistributorsIds();
             distributorsIds.add(id);
-//            status.setDistributorsIds(distributorsIds);
-
-//            int sz = ids.size() - 1;
-//            ids.set(sz, status);
-//            p.setDistributorIds(ids);
         }
     }
 
@@ -182,13 +177,14 @@ public final class Producers {
 
                 MonthlyStatus status = new MonthlyStatus(currStatus);
                 dIds.add(status);
-//                p.setDistributorIds(dIds);
             }
         }
     }
 
-    /** Get the list of producers to be printed */
-    public List<OutProducer> getOutProducers(int noTurns) {
+    /**
+     * Get the list of producers to be printed
+     */
+    public List<OutProducer> getOutProducers() {
         List<OutProducer> outProducers = new ArrayList<>();
 
         for (int id : producers.keySet()) {

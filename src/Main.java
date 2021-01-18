@@ -35,7 +35,6 @@ public final class Main {
 
         ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         InputParser input = mapper.readValue(new File(inFile), InputParser.class);
-        System.out.println(inFile);
 
         int noTurns = input.getNumberOfTurns();
 
@@ -83,7 +82,7 @@ public final class Main {
 
         List<OutConsumer> resConsumers = consumers.getOutConsumers(distributors);
         List<OutDistributor> resDistributors = distributors.getOutDistributors();
-        List<OutProducer> resProducers = producers.getOutProducers(noTurns);
+        List<OutProducer> resProducers = producers.getOutProducers();
 
         OutputParser output = OutputParser.getInstance(resConsumers, resDistributors, resProducers);
         mapper.writeValue(new File(outFile), output);
