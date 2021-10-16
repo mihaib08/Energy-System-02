@@ -1,4 +1,4 @@
-# Object-Oriented Programming [2020-2021]
+# Object-Oriented Programming Projects
 
 The projects developed for the **Object-Oriented Programming** course:
 
