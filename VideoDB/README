@@ -1,0 +1,122 @@
+/**
+ * Mihai-Eugen Barbu [2020-2021]
+ * 325CA
+ */
+
+==== POO - Tema - VideosDB ====
+
+/**
+ * ---- Notatii tipuri de date ----
+ *
+ *     > HM - HashMap<>
+ *     > M - Map
+ *     > L - List<>
+ *     > AL - ArrayList<>
+ */
+
+--> Se folosesc clasele Users, Movies, Serials si Actors pentru procesarea datelor primite ca input.
+			  ----> Utility Classes <----
+
+  >> In acest mod se creeaza initial urmatoarele campuri:
+    
+    -> Users : (HM) watchedShows - retine istoricul vizionarilor fiecarui user;
+             : (HM) favoriteVideos - lista de videouri favorite a fiecarui user;
+             : (L) users - lista de utilizatori <UserInputData>;
+             : (HM) videoRatings - indexeaza, pentru fiecare utilizator, rating-ul fiecarui video
+                                   pe sezoane;
+             : (HM) noRatings - numarul total de rating-uri oferite de fiecare user;
+             : (HM) viewsVideo - numarul de vizualizari ale fiecarui video;
+             : (HM) noFavorites - pentru fiecare videoclip se indica numarul de utilizatori
+                                  care au adaugat acel video in lista de favorite;
+             : (HM) totalRatings - adauga un rating in functie de video si de sezon;
+                        ^ se creeaza clasa - Ratings - in care : se numara cate rating-uri au fost oferite (count);
+                                                               : se retine o suma a rating-urilor primite;
+             : (HM) genreVideos - indexeaza numarul total de vizualizari ale video-urilor dintr-un anumit gen;
+                        ^ se creeaza clasa - VideoViews - care contine : num -> numarul de vizualizari a unei
+                                                                                liste de video-uri;
+                                                                       : (AL) videos -> lista de video-uri;
+
+    -> Movies : (L) movies - lista de filme <MovieInputData>;
+              : (HM) yearMovies - indexarea filmelor dupa anul de aparitie;
+
+    -> Serials : (L) serials - lista de seriale <SerialInputData>;
+               : (HM) yearSerials - indexarea serialelor dupa anul de aparitie;
+               : (L) shows -> o "extindere" a campului serials
+                       ^ se creeaza clasa - Show -
+                               <> pentru fiecare <SerialInputData> serial va retine in plus:
+                                                 - duration - durata totala a serialului;
+                                                 - title - titlul serialului;
+
+    -> Actors : (L) actors - lista de actori <ActorInputData>;
+              : (HM) noAwards - retine pentru fiecare actor cate premii a castigat;
+
+
+  >> Folosind aceste campuri, se construiesc metode pentru rezolvarea fiecarei actiuni:
+
+    --> Comenzi
+
+           -- Favorite -> se verifica daca video-ul se afla deja in favoriteVideos,
+                          daca a fost vizionat de user (watchedShows);
+                       -> se actualizeaza favoriteVideos si noFavorites;
+
+           -- View -> se actualizeaza watchedShows si viewsVideo;
+
+           -- Rating -> se verifica daca videoclipul a fost vizionat (watchedShows),
+                        daca i s-a oferit deja rating (videoRatings);
+                     -> se actualizeaza videoRatings, noRatings si totalRatings;
+
+    --> Queries
+          > in functie de objectType se creeaza clasele :
+
+            -> QueryUsers - se sorteaza noRatings si se extrag utilizatorii in ordinea specificata;
+            
+            -> QueryMovies / QueryShows
+                     <-> filtre - year
+                                - genre
+
+                    - MOST_VIEWED : folosind viewsVideo se genereaza un HM de forma <videoName, noViews>
+                                    care se sorteaza in functie de noViews(I) si videoName(II);
+
+                    - LONGEST : se sorteaza o lista de video-uri dupa durata
+                                                 - la seriale, folosind clasa Show se calculeaza durata totala;
+
+                    - FAVORITE : folosind noFavorites se genereaza un HM <videoName, countFavorites>,
+                                 acesta fiind sortat dupa countFavorites(I) si videoName(II);
+
+                    - RATINGS : folosind totalRatings se creeaza un HM <videoName, meanRating>,
+                                fiind sortat dupa meanRating(I) si videoName(II);
+
+               <> Pentru sortarile videoclipurilor se folosesc metodele din clasa - Videos -
+
+            -> QueryActors :
+                     <-> filtre - awards
+                                - words
+
+                    - AWARDS : folosind noAwards se genereaza un HM <actorName, countAwards>,
+                               care se sorteaza dupa countAwards(I) si actorName(II);
+
+                    - AVERAGE : se genereaza un HM <actorName, meanRating>, unde meanRating
+                                se afla prin parcurgerea listei de filme a actorului si
+                                aflarea rating-ului in functie de tip (film/serial);
+
+                    - FILTER_DESCRIPTION : se transforma descrierea fiecarui actor intr-o lista de cuvinte,
+                                           dupa care se cauta keywords-urile cerute;
+
+    --> Recomandari
+
+           -- Standard - se intoarce video-ul cerut in functie de watchedShows;
+
+           -- Best Unseen - se realizeaza un HM <video, meanRating> care se sorteaza
+                            dupa rating, tinandu-se cont de ordinea din baza de date;
+
+           -- Popular - se populeaza in genreVideos (Users), dupa care se sorteaza genurile
+                        in functie de numarul de vizualizari si se afla primul video nevizionat
+                        din noua lista generata;
+
+           -- Favorite - se foloseste noFavorites si se parcurg video-urile din baza de date
+                         in ordine, cautandu-se primul video cu numar maxim de adaugari in
+                         lista de favorite;
+
+           -- Search - se genereaza, in functie de gen, un HM <video, meanRating> care se sorteaza dupa meanRating;
+
+
